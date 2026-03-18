@@ -7,7 +7,8 @@ app = Flask(__name__)
 def get_audio_url(url):
     ydl_opts = {
         'format': 'bestaudio',
-        'quiet': True
+        'quiet': True,
+        'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -19,7 +20,8 @@ def get_audio_url(url):
 def get_playlist_info(url):
     ydl_opts = {
         'extract_flat': True,
-        'quiet': True
+        'quiet': True,
+        'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
