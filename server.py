@@ -4,11 +4,25 @@ from yt_dlp import YoutubeDL
 
 app = Flask(__name__)
 
+def get_valid_cookie_file():
+    cookie_path = 'cookies.txt'
+    if not os.path.exists(cookie_path):
+        return None
+    # Dosya içeriğinin placeholder olup olmadığını kontrol edelim
+    try:
+        with open(cookie_path, 'r', encoding='utf-8') as f:
+            content = f.read(100)
+            if 'This is a placeholder file' in content:
+                return None
+    except Exception:
+        pass
+    return cookie_path
+
 def get_audio_url(url):
     ydl_opts = {
         'format': 'bestaudio',
         'quiet': True,
-        'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
+        'cookiefile': get_valid_cookie_file(),
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -21,7 +35,7 @@ def get_playlist_info(url):
     ydl_opts = {
         'extract_flat': True,
         'quiet': True,
-        'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
+        'cookiefile': get_valid_cookie_file(),
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
