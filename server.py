@@ -1,8 +1,35 @@
+import os
 from flask import Flask, request, jsonify
-from link import get_audio_url
-from service import get_playlist_info
+from yt_dlp import YoutubeDL
 
 app = Flask(__name__)
+
+def get_audio_url(url):
+    ydl_opts = {
+        'format': 'bestaudio',
+        'quiet': True
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return {
+            "title": info.get('title'),
+            "url": info.get('url')
+        }
+
+def get_playlist_info(url):
+    ydl_opts = {
+        'extract_flat': True,
+        'quiet': True
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        entries = []
+        for video in info.get('entries', []):
+            entries.append({
+                "title": video.get('title'),
+                "url": video.get('url')
+            })
+        return entries
 
 @app.route('/extract', methods=['POST'])
 def extract():
@@ -28,5 +55,7 @@ def extract():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    print("Server starting on http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Railway sets the PORT environment variable
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Server starting on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
