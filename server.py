@@ -23,7 +23,8 @@ def get_audio_url(url, lang='tr'):
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
-        'extractor_args': {'youtube': ['player_client=android,web', f'lang={lang}']},
+        'cookiefile': get_valid_cookie_file(),
+        'extractor_args': {'youtube': [f'lang={lang}']},
         'http_headers': {'Accept-Language': f'{lang},{lang[:2]};q=0.9,en;q=0.8'},
     }
     with YoutubeDL(ydl_opts) as ydl:
