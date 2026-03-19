@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from flask import Flask, request, jsonify
 from yt_dlp import YoutubeDL
 
@@ -18,25 +19,38 @@ def get_valid_cookie_file():
         pass
     return cookie_path
 
-def get_audio_url(url):
+def get_audio_url(url, lang='tr'):
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
-        'extractor_args': {'youtube': ['player_client=android,web']},
+        'extractor_args': {'youtube': ['player_client=android,web', f'lang={lang}']},
+        'http_headers': {'Accept-Language': f'{lang},{lang[:2]};q=0.9,en;q=0.8'},
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
-        return {
+        audio_url = info.get('url')
+        
+        result = {
             "title": info.get('title'),
-            "url": info.get('url')
+            "url": audio_url
         }
+        
+        if audio_url:
+            parsed_url = urllib.parse.urlparse(audio_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            expire_timestamp = query_params.get('expire', [None])[0]
+            if expire_timestamp:
+                result["expire"] = int(expire_timestamp)
+                
+        return result
 
-def get_playlist_info(url):
+def get_playlist_info(url, lang='tr'):
     ydl_opts = {
         'extract_flat': True,
         'quiet': True,
         'cookiefile': get_valid_cookie_file(),
-        'extractor_args': {'youtube': ['player_client=ios,android']},
+        'extractor_args': {'youtube': ['player_client=android,web', f'lang={lang}']},
+        'http_headers': {'Accept-Language': f'{lang},{lang[:2]};q=0.9,en;q=0.8'},
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -57,13 +71,14 @@ def extract():
     
     url = data['url']
     extract_type = data['type'] # 'link' or 'list'
+    lang = data.get('lang', 'tr')
     
     try:
         if extract_type == 'link':
-            result = get_audio_url(url)
+            result = get_audio_url(url, lang)
             return jsonify(result)
         elif extract_type == 'list':
-            result = get_playlist_info(url)
+            result = get_playlist_info(url, lang)
             return jsonify(result)
         else:
             return jsonify({"error": "Invalid type. Use 'link' or 'list'"}), 400
