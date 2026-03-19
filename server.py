@@ -20,10 +20,9 @@ def get_valid_cookie_file():
 
 def get_audio_url(url):
     ydl_opts = {
-        'format': 'bestaudio',
+        'format': 'bestaudio/best',
         'quiet': True,
-        'cookiefile': get_valid_cookie_file(),
-        'extractor_args': {'youtube': ['player_client=ios,android']},
+        'extractor_args': {'youtube': ['player_client=android,web']},
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
