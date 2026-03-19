@@ -23,6 +23,7 @@ def get_audio_url(url):
         'format': 'bestaudio',
         'quiet': True,
         'cookiefile': get_valid_cookie_file(),
+        'extractor_args': {'youtube': ['player_client=ios,android']},
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -36,6 +37,7 @@ def get_playlist_info(url):
         'extract_flat': True,
         'quiet': True,
         'cookiefile': get_valid_cookie_file(),
+        'extractor_args': {'youtube': ['player_client=ios,android']},
     }
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
